@@ -1,18 +1,36 @@
 import AppKit
 
-/// Menu bar glyphs from Lucide (https://lucide.dev, ISC licence, see LICENSES/lucide.txt).
-/// Drawn as template images so macOS tints them for light and dark menu bars and the
-/// highlighted state. Boost on: `sun`. Standard brightness: `sun-dim`. Problem: `triangle-alert`.
+/// Template images let macOS handle contrast in the menu bar.
 enum MenuBarIcon {
     static let on = make("""
-    <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+    <path fill="black" stroke="none" fill-rule="evenodd"
+          d="M12 1 15.2 4.3 19.8 4.2 19.7 8.8 23 12 19.7 15.2 19.8 19.8
+             15.2 19.7 12 23 8.8 19.7 4.2 19.8 4.3 15.2 1 12 4.3 8.8
+             4.2 4.2 8.8 4.3Z M19 12a7 7 0 1 0-14 0 7 7 0 1 0 14 0Z"/>
+    <circle cx="12" cy="12" r="5.8" fill="black" stroke="none"/>
     """)
-    static let off = make("""
-    <circle cx="12" cy="12" r="4"/><path d="M12 4h.01"/><path d="M20 12h.01"/><path d="M12 20h.01"/><path d="M4 12h.01"/><path d="M17.657 6.343h.01"/><path d="M17.657 17.657h.01"/><path d="M6.343 17.657h.01"/><path d="M6.343 6.343h.01"/>
-    """)
+    static let off = symbol("moon.fill")
+
+    // Lucide triangle-alert (ISC licence, see LICENSES/lucide.txt).
     static let problem = make("""
     <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>
     """)
+
+    private static func symbol(_ name: String) -> NSImage {
+        let configuration = NSImage.SymbolConfiguration(pointSize: 15, weight: .medium)
+        let glyph = NSImage(systemSymbolName: name, accessibilityDescription: AppInfo.name)?
+            .withSymbolConfiguration(configuration) ?? NSImage()
+        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { rect in
+            let scale = min(1, rect.width / max(1, glyph.size.width), rect.height / max(1, glyph.size.height))
+            let size = NSSize(width: glyph.size.width * scale, height: glyph.size.height * scale)
+            glyph.draw(in: NSRect(x: rect.midX - size.width / 2, y: rect.midY - size.height / 2,
+                                  width: size.width, height: size.height))
+            return true
+        }
+        image.isTemplate = true
+        image.accessibilityDescription = AppInfo.name
+        return image
+    }
 
     private static func make(_ body: String, size: CGFloat = 18) -> NSImage {
         let svg = """

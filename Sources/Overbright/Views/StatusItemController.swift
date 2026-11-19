@@ -13,6 +13,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private var toggleItem = NSMenuItem()
     private var statusTextItem = NSMenuItem()
+    private var restoreItem = NSMenuItem()
     private var brightnessKeysItem = NSMenuItem()
     private var dimItem = NSMenuItem()
     /// The press behind `dimShortcut`; the menu item does the same.
@@ -87,7 +88,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             return (item, preset)
         }
 
-        let restoreItem = NSMenuItem(
+        restoreItem = NSMenuItem(
             title: L10n.tr("Restore Standard Brightness", "恢复标准亮度"),
             action: #selector(restoreStandardBrightness),
             keyEquivalent: "r"
@@ -253,7 +254,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let item = NSMenuItem()
         let container = NSView(frame: NSRect(x: 0, y: 0, width: 270, height: 62))
 
-        let caption = NSTextField(labelWithString: L10n.tr("Brightness", "亮度"))
+        let caption = NSTextField(labelWithString: L10n.tr("Boost target", "增亮目标"))
         caption.font = .systemFont(ofSize: 12, weight: .medium)
         caption.frame = NSRect(x: 14, y: 38, width: 140, height: 17)
         container.addSubview(caption)
@@ -272,7 +273,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         slider.target = self
         slider.action = #selector(sliderChanged)
         slider.frame = NSRect(x: 12, y: 8, width: 246, height: 24)
-        slider.setAccessibilityLabel(L10n.tr("Boost level", "增亮强度"))
+        slider.setAccessibilityLabel(L10n.tr("Boost target", "增亮目标"))
         container.addSubview(slider)
 
         item.view = container
@@ -291,6 +292,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             : L10n.tr("Turn Boost On", "开启增亮")
         let supported = snapshot.support == .supported
         toggleItem.isEnabled = active || supported
+        restoreItem.isEnabled = snapshot.state != .off
         slider.isEnabled = supported
         statusTextItem.toolTip = nil
 
@@ -307,7 +309,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             if case let .unsupported(reason) = snapshot.support {
                 statusTextItem.title = reason.message
             } else {
-                statusTextItem.title = L10n.tr("Standard brightness", "标准亮度")
+                statusTextItem.title = L10n.tr("Boost off · Standard brightness", "增亮已关闭 · 标准亮度")
             }
         case .engaging:
             icon = MenuBarIcon.on

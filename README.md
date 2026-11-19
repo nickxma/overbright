@@ -78,7 +78,7 @@ Each release also has `SHA256SUMS.txt`. Run `shasum -a 256 -c SHA256SUMS.txt` in
 Needs the Swift compiler. If you have never installed it, run `xcode-select --install` first.
 
 ```bash
-git clone https://github.com/JJ22007/overbright.git
+git clone https://github.com/nickxma/overbright.git
 cd overbright
 bash scripts/install.sh
 ```

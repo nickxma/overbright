@@ -39,6 +39,12 @@ enum PanelSupport {
         case unsupported(Reason)
     }
 
+    enum DirectBlocker: String {
+        case unsupportedDisplay
+        case missingPhysicalPeak
+        case missingStandardWhite
+    }
+
     /// Below this the display has no EDR headroom at all.
     static let minimumHeadroom: Double = 1.05
 
@@ -90,9 +96,14 @@ enum PanelSupport {
     /// The direct method can run: an XDR peak is known (so every write can be
     /// bounded by it) and standard white can be told.
     static func canDriveDirectly(_ readings: PanelReadings) -> Bool {
-        guard verdict(readings) == .supported,
-              let peak = readings.peakNits, peak >= xdrMinimumPeak else { return false }
-        return standardWhite(readings) != nil
+        directBlocker(readings) == nil
+    }
+
+    static func directBlocker(_ readings: PanelReadings) -> DirectBlocker? {
+        guard verdict(readings) == .supported else { return .unsupportedDisplay }
+        guard let peak = readings.peakNits, peak >= xdrMinimumPeak else { return .missingPhysicalPeak }
+        guard standardWhite(readings) != nil else { return .missingStandardWhite }
+        return nil
     }
 
     /// The direct method's ceiling: the configured `maxNits`, never more than

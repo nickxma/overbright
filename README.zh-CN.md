@@ -74,7 +74,7 @@
 需要 Swift 编译器。没装过的话先运行 `xcode-select --install`。
 
 ```bash
-git clone https://github.com/JJ22007/overbright.git
+git clone https://github.com/nickxma/overbright.git
 cd overbright
 bash scripts/install.sh
 ```

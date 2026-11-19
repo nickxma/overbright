@@ -4,7 +4,7 @@ import Foundation
 enum AppInfo {
     static let name = "Overbright"
     static let bundleID = "io.github.overbright"
-    static let repoURL = "https://github.com/JJ22007/overbright"
+    static let repoURL = "https://github.com/nickxma/overbright"
     /// Name of the distributed notification the CLI uses to reach the app.
     static let commandChannel = "io.github.overbright.command"
 

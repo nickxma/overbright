@@ -57,6 +57,7 @@ final class BoostController {
     /// on another model to send in an issue.
     var panelDiagnostics: [String: Any] {
         let readings = PanelLightService.readings()
+        let directBlocker = PanelSupport.directBlocker(readings)
         func rounded(_ value: Double?) -> Any { value.map { ($0 * 10).rounded() / 10 } ?? NSNull() }
         return [
             "model": PanelLightService.modelIdentifier ?? NSNull(),
@@ -64,7 +65,8 @@ final class BoostController {
             "capNits": rounded(readings.capNits),
             "systemStandardNits": rounded(readings.systemStandardNits),
             "standardNits": rounded(PanelSupport.standardWhite(readings)),
-            "directPossible": PanelSupport.canDriveDirectly(readings),
+            "directPossible": directBlocker == nil,
+            "directBlocker": directBlocker?.rawValue as Any? ?? NSNull(),
             "candidateMethods": candidateMethods(readings).map(\.rawValue),
         ]
     }
