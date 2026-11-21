@@ -31,7 +31,7 @@ final class SpaceTransitionWatcher {
     private var source: CFRunLoopSource?
     private var pollTimer: Timer?
     private var lastGestureAt: TimeInterval = 0
-    private var missionControlOpen = false
+    private var systemOverlayOpen = false
     private let logger = Logger(subsystem: AppInfo.bundleID, category: "Spaces")
 
     /// How long after the last swipe event a transition counts as over: the
@@ -59,7 +59,7 @@ final class SpaceTransitionWatcher {
         if let tap { CFMachPortInvalidate(tap) }
         source = nil
         tap = nil
-        missionControlOpen = false
+        systemOverlayOpen = false
         update()
     }
 
@@ -121,39 +121,44 @@ final class SpaceTransitionWatcher {
     }
 
     private func poll() {
-        missionControlOpen = Self.missionControlIsOpen()
+        systemOverlayOpen = Self.systemOverlayIsOpen()
         update()
     }
 
     private func update() {
         let swiping = ProcessInfo.processInfo.systemUptime - lastGestureAt < Self.settleTime
-        let now = swiping || missionControlOpen
+        let now = swiping || systemOverlayOpen
         guard now != isTransitioning else { return }
         isTransitioning = now
         if now { hideCount += 1 }
         onChange?(now)
     }
 
-    /// Keys that switch Spaces or open Mission Control: Control or Option
-    /// with an arrow key (the Spaces shortcuts, as the user has them), and the
-    /// Mission Control key.
+    /// Recognize the Spaces shortcuts without intercepting text selection
+    /// such as Option-Shift-Arrow. Control-Shift-Arrow also switches Spaces.
     static func startsTransition(_ event: CGEvent) -> Bool {
         let code = event.getIntegerValueField(.keyboardEventKeycode)
-        let flags = event.flags
         let arrows: Set<Int64> = [123, 124, 125, 126]
-        if arrows.contains(code), flags.contains(.maskControl) || flags.contains(.maskAlternate) {
-            return true
+        let modifiers = event.flags.intersection([.maskControl, .maskAlternate, .maskShift, .maskCommand])
+        if arrows.contains(code) {
+            return modifiers == .maskControl || modifiers == [.maskControl, .maskShift] || modifiers == .maskAlternate
         }
         return code == 160 // Mission Control (F3)
     }
 
-    static func missionControlIsOpen() -> Bool {
+    private static func systemOverlayIsOpen() -> Bool {
         guard let windows = CGWindowListCopyWindowInfo(
             [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
         ) as? [[String: Any]] else { return false }
         return windows.contains { window in
-            guard (window[kCGWindowOwnerName as String] as? String) == "WindowManager",
-                  let layer = window[kCGWindowLayer as String] as? Int, (1...100).contains(layer),
+            guard let owner = window[kCGWindowOwnerName as String] as? String,
+                  let layer = window[kCGWindowLayer as String] as? Int else { return false }
+            // The macOS 27 selection surface is present in both picker modes.
+            if owner == "screencapture" && layer == 1498 { return true }
+            // CleanShot's capture-session window bridges the short gap when
+            // Space replaces the system selection surface with a new one.
+            if owner == "CleanShot X" && layer == -2_147_483_600 { return true }
+            guard owner == "WindowManager", (1...100).contains(layer),
                   let bounds = window[kCGWindowBounds as String] as? [String: Any],
                   let width = (bounds["Width"] as? NSNumber)?.doubleValue else { return false }
             return width >= 800

@@ -7,6 +7,11 @@ Download **Overbright-universal.zip**, unzip it, and move **Overbright.app** int
 - Not notarized by Apple. If the first launch is blocked, choose **Open Anyway** under System Settings → Privacy & Security. You do not need to turn Gatekeeper off.
 - To use F1/F2 past 100%, allow Overbright under Privacy & Security → Accessibility.
 
+## 2.6.5 — Fixes in this fork
+
+- **CleanShot X window captures.** Overbright pauses its brightness overlay while the screenshot picker is open, keeps it hidden when Space switches between area and window selection, and restores the boost after capture or cancellation. If CleanShot opens in window mode and the first click fails, press Space twice to switch to area selection and back. Window capture worked with that sequence on the tested PROLED MacBook Pro (Mac17,13).
+- **Notion text selection.** Option–Shift–Arrow no longer triggers the brightness dip while selecting text. The guard still pauses the overlay during Mission Control and desktop swipes to prevent the white flash.
+
 ## 2.6.4
 
 - **Clearer menu bar icons.** A solid eight-point sun means the boost is on, and a crescent moon means it is off. Both take up the same space in the menu bar.
